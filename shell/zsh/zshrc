@@ -1,5 +1,46 @@
 : ############################################################################
 :
+: INITIAL STATE
+:
+: ############################################################################
+
+umask 077
+set -N
+
+
+: ############################################################################
+:
+: PROXY HANDLING
+:
+: ############################################################################
+
+: Set proxy variables
+function proxyon() {
+  export HTTP_PROXY=https://some.url
+  export HTTPS_PROXY=${HTTP_PROXY}
+  export https_proxy=${HTTP_PROXY}
+  export http_proxy=${HTTP_PROXY}
+  export no_proxy=127.0.0.1,localhost,.etc,.ad.inf
+  export NO_PROXY=${no_proxy}
+}
+
+: Clear proxy variables
+function proxyoff() {
+  unset HTTPS_PROXY
+  unset https_proxy
+  unset HTTP_PROXY
+  unset http_proxy
+  unset NO_PROXY
+  unset no_proxy
+}
+
+: Use proxy by default
+: proxyon
+: Or not
+: proxyoff
+
+: ############################################################################
+:
 : ZSH COMMAND COMPLETION
 :
 : ############################################################################
@@ -13,13 +54,47 @@ fi
 
 : ############################################################################
 :
+: HOMEBREW SETUP
+:
+: ############################################################################
+
+export HOMEBREW_INSTALL_FROM_API=1
+
+
+: ############################################################################
+:
+: JAVA SETUP
+:
+: ############################################################################
+
+export JAVA11_HOME=/opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home
+export JAVA17_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export JAVA21_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+
+alias use-java11='export JAVA_HOME=$JAVA11_HOME'
+alias use-java17='export JAVA_HOME=$JAVA17_HOME'
+alias use-java21='export JAVA_HOME=$JAVA21_HOME'
+
+use-java17
+
+
+: ############################################################################
+:
 : COMMON COMMAND ALIASES
 :
 : ############################################################################
 
+alias ga='git add .'
+alias gc='git commit'
+alias gac='git commit -a'
+function gacp () {
+  git commit -a "$@"
+  git push
+}
+alias h='history 1|grep'
 alias ls='ls -FG'
 alias ll='ls -l' 
-alias k8='kubectl'
+alias la='ll -a' 
 
 
 : ############################################################################
@@ -28,4 +103,30 @@ alias k8='kubectl'
 :
 : ############################################################################
 
-PATH=$PATH:/Users/roger.glover/Applications/MacVim.app/Contents/bin
+PATH=$PATH:/Users/roger.glover/Applications/MacVim.app/Contents/bin:~/bin
+: Alternate install path
+: PATH=$PATH:/Applications/MacVim.app/Contents/bin:~/bin
+
+
+: ############################################################################
+:
+: K8s SETUP
+:
+: ############################################################################
+
+alias k8='kubectl'
+function k8yaml () {
+  kubectl get $2 $3 -n $1 -o yaml
+}
+alias k8dyaml='k8yaml apl-edm-streaming-svcs-l3-dev1'
+alias k8dxyaml='k8dyaml secrets'
+alias k8diyaml='k8dyaml ingress'
+alias k8ddyaml='k8dyaml deployment'
+alias k8dsyaml='k8dyaml service'
+function k8cat () {
+  cat $1 |grep "$2: "|cut -f2 -d:|cut -f2 -d' '|base64 -d
+}
+function k8diff () {
+  k8dcat $1 $2|base64 -d|diff - $2
+}
+
