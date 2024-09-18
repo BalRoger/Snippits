@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static whatever.Util.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -105,11 +106,26 @@ public abstract class BaseTest {
         }
     }
 
+    protected <E extends Exception> E executeFailure(ERunnable<E> execute, Class<E> expected) {
+        try {
+            execute.run();
+        } catch (Exception e) {
+            return (E) e;
+        }
+
+        fail("Should have thrown " + expected.getName());
+        return null; // appeasing the compiler: this line will never be executed.
+    }
+
     public interface EFunction<T,R,E extends Exception> {
         R apply(T t) throws E;
     }
 
     public interface EConsumer<T,E extends Exception> {
         void accept(T t) throws E;
+    }
+
+    public interface ERunnable<E extends Exception> {
+        void run() throws E;
     }
 }
