@@ -1,6 +1,7 @@
 // package whatever;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @Log4j2
-public abstract class BaseTest {
+public class BaseTest {
 
     private AutoCloseable mockCloseable;
 
@@ -56,7 +57,6 @@ public abstract class BaseTest {
         VerificationMode vMode = times(n);
         return methodMock(mock, method, vMode);
     }
-   
     protected <T,R,E extends Exception> OngoingStubbing<R> methodMock(
             T mock, EFunction<T,R,E> method, VerificationMode vMode) {
         if(Arrays.stream(mocks).anyMatch(m -> m == mock)) {
@@ -106,7 +106,8 @@ public abstract class BaseTest {
         }
     }
 
-    protected <E extends Exception> E executeFailure(ERunnable<E> execute, Class<E> expected) {
+    @SuppressWarnings("unchecked")
+    protected <E extends Exception> E runFail(ERunnable<E> execute, Class<E> expected) {
         try {
             execute.run();
         } catch (Exception e) {
@@ -117,6 +118,16 @@ public abstract class BaseTest {
         return null; // appeasing the compiler: this line will never be executed.
     }
 
+    @SuppressWarnings("unchecked")
+    protected <R, E extends Exception> ResultThrown<R,E> runFail(ESupplier<R, E> execute, Class<E> expected) {
+        
+        try {
+            return ResultThrown.of(execute.get(), null);
+        } catch (Exception e) {
+            return ResultThrown.of(null, (E) e);
+        }
+    }
+
     public interface EFunction<T,R,E extends Exception> {
         R apply(T t) throws E;
     }
@@ -125,7 +136,29 @@ public abstract class BaseTest {
         void accept(T t) throws E;
     }
 
+    public interface ESupplier<T,E extends Exception> {
+        T get() throws E;
+    }
+
     public interface ERunnable<E extends Exception> {
         void run() throws E;
+    }
+
+    public static class ResultThrown<R, E extends Exception> extends Pair<R,E> {
+        private final R result;
+        private final E thrown;
+        private ResultThrown (R result, E thrown) {
+            this.result = result;
+            this.thrown = thrown;
+        }
+        public R result() { return result; }
+        public E thrown() { return thrown; }
+        @Override public R getLeft() { return result(); }
+        @Override public E getRight() { return thrown(); }
+        @Override public E setValue(E value) { throw new UnsupportedOperationException(); }
+
+        public static <R,E extends Exception> ResultThrown<R, E> of(R result, E thrown) {
+            return new ResultThrown<>(result, thrown);
+        }
     }
 }
