@@ -20,7 +20,7 @@ function proxyon() {
   export HTTPS_PROXY=${HTTP_PROXY}
   export https_proxy=${HTTP_PROXY}
   export http_proxy=${HTTP_PROXY}
-  export no_proxy=127.0.0.1,localhost,.etc,.ad.inf
+  export no_proxy=127.0.0.1,localhost,.etc,.ad.inf    # ADD intranet domain(s)
   export NO_PROXY=${no_proxy}
 }
 
@@ -84,6 +84,12 @@ use-java17
 :
 : ############################################################################
 
+alias h='history 1|grep'
+alias ls='ls -FG'
+alias ll='ls -l' 
+alias la='ll -a'
+alias k8='kubectl'
+alias g='git status'
 alias ga='git add .'
 alias gc='git commit'
 alias gac='git commit -a'
@@ -91,10 +97,6 @@ function gacp () {
   git commit -a "$@"
   git push
 }
-alias h='history 1|grep'
-alias ls='ls -FG'
-alias ll='ls -l' 
-alias la='ll -a' 
 
 
 : ############################################################################
@@ -114,7 +116,6 @@ PATH=$PATH:/Users/roger.glover/Applications/MacVim.app/Contents/bin:~/bin
 :
 : ############################################################################
 
-alias k8='kubectl'
 function k8yaml () {
   kubectl get $2 $3 -n $1 -o yaml
 }
