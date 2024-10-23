@@ -1,5 +1,8 @@
-// package whatever;
+package whatever;
+package com.usbank.ess.kafka.admin;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -18,6 +21,12 @@ import static org.mockito.Mockito.*;
 
 @Log4j2
 public class BaseTest {
+
+    //  ============================================
+    //
+    //  MOCK HANDLING
+    //
+    //  ============================================
 
     private AutoCloseable mockCloseable;
 
@@ -106,6 +115,13 @@ public class BaseTest {
         }
     }
 
+
+    //  ============================================
+    //
+    //  Convenience Methods
+    //
+    //  ============================================
+
     @SuppressWarnings("unchecked")
     protected <E extends Exception> E runFail(ERunnable<E> execute, Class<E> expected) {
         try {
@@ -120,13 +136,20 @@ public class BaseTest {
 
     @SuppressWarnings("unchecked")
     protected <R, E extends Exception> ResultThrown<R,E> runFail(ESupplier<R, E> execute, Class<E> expected) {
-        
+
         try {
             return ResultThrown.of(execute.get(), null);
         } catch (Exception e) {
             return ResultThrown.of(null, (E) e);
         }
     }
+
+
+    //  ============================================
+    //
+    //  Supporting structure
+    //
+    //  ============================================
 
     public interface EFunction<T,R,E extends Exception> {
         R apply(T t) throws E;
@@ -144,13 +167,10 @@ public class BaseTest {
         void run() throws E;
     }
 
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ResultThrown<R, E extends Exception> extends Pair<R,E> {
         private final R result;
         private final E thrown;
-        private ResultThrown (R result, E thrown) {
-            this.result = result;
-            this.thrown = thrown;
-        }
         public R result() { return result; }
         public E thrown() { return thrown; }
         @Override public R getLeft() { return result(); }
