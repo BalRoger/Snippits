@@ -1,5 +1,4 @@
 package whatever;
-package com.usbank.ess.kafka.admin;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
